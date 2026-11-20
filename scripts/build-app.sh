@@ -53,7 +53,13 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-echo "Ad-hoc signing ${APP_BUNDLE}..."
-codesign --force --deep --sign - "$APP_BUNDLE"
+SIGN_IDENTITY="${SIGN_IDENTITY:-yeoleobun}"
+if security find-identity -v -p codesigning | grep -Fq "\"${SIGN_IDENTITY}\""; then
+  echo "Signing ${APP_BUNDLE} with identity \"${SIGN_IDENTITY}\"..."
+  codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+else
+  echo "Signing identity \"${SIGN_IDENTITY}\" not found; falling back to ad-hoc signing..."
+  codesign --force --deep --sign - "$APP_BUNDLE"
+fi
 
 echo "Done! Built: ${APP_BUNDLE}"
