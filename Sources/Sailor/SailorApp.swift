@@ -25,7 +25,7 @@ final class SailorAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             anchorIconView = AnchorStatusIconView(frame: button.bounds)
             anchorIconView.autoresizingMask = [.width, .height]
             button.addSubview(anchorIconView)
-            button.toolTip = "Sailor"
+            button.setAccessibilityTitle("Sailor")
         }
 
         // Native NSMenu automatically adopts macOS 26+ built-in Liquid Glass styling

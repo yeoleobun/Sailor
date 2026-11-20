@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="Sailor"
-APP_VERSION="${APP_VERSION:-0.1.2}"
+APP_VERSION="${APP_VERSION:-0.1.3}"
 APP_BUNDLE="$ROOT_DIR/build/${APP_NAME}.app"
 
 echo "Building ${APP_NAME} (release)..."

@@ -70,11 +70,7 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" \
-              dist/Sailor-macos-arm64.zip \
-              dist/Sailor-macos-arm64.dmg \
-              dist/SHA256SUMS.txt \
-              --clobber
+            echo "Release $TAG already exists; skipping upload to preserve SHA-256."
           else
             gh release create "$TAG" \
               dist/Sailor-macos-arm64.zip \
