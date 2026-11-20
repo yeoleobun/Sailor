@@ -139,6 +139,33 @@ final class SailorAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         rememberedItem.submenu = rememberedSubmenu
         menu.addItem(rememberedItem)
 
+        // 3b. Fallback Location for New / Unrecognized Wi-Fi (defaults to Automatic)
+        let fallbackTitle = store.fallbackLocationName.map { "New Wi-Fi → \($0)" } ?? "New Wi-Fi → Do Nothing"
+        let fallbackItem = NSMenuItem(title: fallbackTitle, action: nil, keyEquivalent: "")
+        let fallbackSubmenu = NSMenu()
+        for location in store.locations {
+            let locItem = NSMenuItem(
+                title: location.name,
+                action: #selector(selectFallbackLocation(_:)),
+                keyEquivalent: ""
+            )
+            locItem.target = self
+            locItem.representedObject = location.name
+            locItem.state = (store.fallbackLocationName == location.name) ? .on : .off
+            fallbackSubmenu.addItem(locItem)
+        }
+        fallbackSubmenu.addItem(.separator())
+        let doNothingItem = NSMenuItem(
+            title: "Do Nothing",
+            action: #selector(clearFallbackLocation),
+            keyEquivalent: ""
+        )
+        doNothingItem.target = self
+        doNothingItem.state = (store.fallbackLocationName == nil) ? .on : .off
+        fallbackSubmenu.addItem(doNothingItem)
+        fallbackItem.submenu = fallbackSubmenu
+        menu.addItem(fallbackItem)
+
         // 4. Toggles & System Settings Jump
         let autoSwitchItem = NSMenuItem(
             title: "Auto-Switch",
@@ -200,6 +227,15 @@ final class SailorAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func clearAllRemembered() {
         store.clearAllRemembered()
+    }
+
+    @objc private func selectFallbackLocation(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+        store.fallbackLocationName = name
+    }
+
+    @objc private func clearFallbackLocation() {
+        store.fallbackLocationName = nil
     }
 
     @objc private func toggleAutoSwitch() {

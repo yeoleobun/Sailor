@@ -6,8 +6,34 @@ import ServiceManagement
 struct SailorConfig: Codable {
     var autoSwitchEnabled: Bool = true
     var swingAnimationEnabled: Bool = true
+    /// Location to switch to when joining an unrecognized/new Wi-Fi network (nil = do nothing).
+    var fallbackLocationName: String? = "Automatic"
     /// Maps recognized Wi-Fi SSID -> last chosen macOS Network Location name.
     var rememberedLocations: [String: String] = [:]
+
+    init(
+        autoSwitchEnabled: Bool = true,
+        swingAnimationEnabled: Bool = true,
+        fallbackLocationName: String? = "Automatic",
+        rememberedLocations: [String: String] = [:]
+    ) {
+        self.autoSwitchEnabled = autoSwitchEnabled
+        self.swingAnimationEnabled = swingAnimationEnabled
+        self.fallbackLocationName = fallbackLocationName
+        self.rememberedLocations = rememberedLocations
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        autoSwitchEnabled = try c.decodeIfPresent(Bool.self, forKey: .autoSwitchEnabled) ?? true
+        swingAnimationEnabled = try c.decodeIfPresent(Bool.self, forKey: .swingAnimationEnabled) ?? true
+        if c.contains(.fallbackLocationName) {
+            fallbackLocationName = try c.decodeIfPresent(String.self, forKey: .fallbackLocationName)
+        } else {
+            fallbackLocationName = "Automatic"
+        }
+        rememberedLocations = try c.decodeIfPresent([String: String].self, forKey: .rememberedLocations) ?? [:]
+    }
 }
 
 @MainActor
@@ -21,6 +47,14 @@ final class SailorStore {
 
     var swingAnimationEnabled: Bool = true {
         didSet { saveConfig() }
+    }
+
+    /// Location to auto-switch to for new/unrecognized Wi-Fi networks (defaults to "Automatic").
+    var fallbackLocationName: String? = "Automatic" {
+        didSet {
+            saveConfig()
+            if autoSwitchEnabled { evaluateAutoSwitch() }
+        }
     }
 
     /// Remembered mapping of Wi-Fi SSID -> macOS Network Location name.
@@ -135,22 +169,34 @@ final class SailorStore {
     }
 
     /// Looks up the remembered location for the current Wi-Fi SSID and switches back automatically.
+    /// For new/unrecognized Wi-Fi networks, switches to `fallbackLocationName` (defaults to "Automatic").
     func evaluateAutoSwitch() {
         guard autoSwitchEnabled else { return }
         guard let ssid = currentSSID, !ssid.isEmpty else { return }
-        guard let targetName = rememberedLocations[ssid], !targetName.isEmpty else { return }
+
+        let targetName: String?
+        if let remembered = rememberedLocations[ssid], !remembered.isEmpty {
+            targetName = remembered
+        } else if let fallback = fallbackLocationName, !fallback.isEmpty,
+                  locations.contains(where: { $0.name == fallback }) {
+            targetName = fallback
+        } else {
+            targetName = nil
+        }
+
+        guard let resolvedTarget = targetName else { return }
 
         // Already active — nothing to do
-        if activeLocation?.name == targetName { return }
+        if activeLocation?.name == resolvedTarget { return }
 
         do {
-            try locationManager.switchLocation(named: targetName)
+            try locationManager.switchLocation(named: resolvedTarget)
             refreshLocations()
             if swingAnimationEnabled {
                 onProfileSwitched?()
             }
         } catch {
-            // Silently ignore if the remembered location was removed in System Settings
+            // Silently ignore if the target location was removed in System Settings
         }
     }
 
@@ -178,6 +224,7 @@ final class SailorStore {
 
         self.autoSwitchEnabled = config.autoSwitchEnabled
         self.swingAnimationEnabled = config.swingAnimationEnabled
+        self.fallbackLocationName = config.fallbackLocationName
         self.rememberedLocations = config.rememberedLocations
     }
 
@@ -185,6 +232,7 @@ final class SailorStore {
         let config = SailorConfig(
             autoSwitchEnabled: autoSwitchEnabled,
             swingAnimationEnabled: swingAnimationEnabled,
+            fallbackLocationName: fallbackLocationName,
             rememberedLocations: rememberedLocations
         )
         if let data = try? JSONEncoder().encode(config) {
