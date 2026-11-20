@@ -54,7 +54,7 @@ To create release `.zip`, `.dmg`, and `SHA256SUMS.txt` artifacts:
 
 ## Project Structure
 
-- `assets/` — App icon (`sailor-logo.svg`, `AppIcon.png`, `AppIcon.icns`) and menu bar template SVG (`sailor-menubar.svg`)
+- `assets/` — App icon (`AppIcon.png`, `AppIcon.icns`) and menu bar template SVG (`sailor-menubar.svg`)
 - `Sources/Sailor/` — Native AppKit menu bar app (`SailorApp.swift`, `AnchorStatusIcon.swift`, `RuleStore.swift`, `WiFiMonitor.swift`, `NetworkLocationManager.swift`)
 - `scripts/` — App bundle builder (`build-app.sh`) and release packager (`release.sh`)
 
