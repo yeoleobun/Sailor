@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="Sailor"
+APP_VERSION="${APP_VERSION:-0.1.2}"
 APP_BUNDLE="$ROOT_DIR/build/${APP_NAME}.app"
 
 echo "Building ${APP_NAME} (release)..."
@@ -18,7 +19,7 @@ mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 cp "$BIN_PATH" "$APP_BUNDLE/Contents/MacOS/${APP_NAME}"
 cp "$ROOT_DIR/assets/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 
-cat > "$APP_BUNDLE/Contents/Info.plist" <<'PLIST'
+cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -38,9 +39,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<'PLIST'
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1.2</string>
+    <string>${APP_VERSION}</string>
     <key>CFBundleVersion</key>
-    <string>3</string>
+    <string>${APP_VERSION}</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>LSUIElement</key>
@@ -54,7 +55,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<'PLIST'
 PLIST
 
 SIGN_IDENTITY="${SIGN_IDENTITY:-yeoleobun}"
-if security find-identity -v -p codesigning | grep -Fq "\"${SIGN_IDENTITY}\""; then
+if security find-identity -p codesigning | grep -Fq "\"${SIGN_IDENTITY}\""; then
   echo "Signing ${APP_BUNDLE} with identity \"${SIGN_IDENTITY}\"..."
   codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
 else
