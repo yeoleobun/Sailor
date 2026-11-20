@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Swift Package Manager & Xcode
+.build/
+.swiftpm/
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+
+# Packaged app & release output
+build/
+dist/
+
+# Local editor configs
+.vscode/
+.idea/

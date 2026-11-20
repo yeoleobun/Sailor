@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <filter id="tile-shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#0F172A" flood-opacity="0.14" />
+    </filter>
+  </defs>
+
+  <!-- macOS White Squircle Tile (Apple HIG 824x824 grid inside 1024x1024) -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#FFFFFF" filter="url(#tile-shadow)" />
+
+  <!-- Sailor Tilted Pointed Anchor — Ocean Blue #1D63ED -->
+  <g transform="translate(512, 520) rotate(-20) scale(2.10) translate(-220, -222)" color="#1D63ED">
+    <!-- Top Ring (Eye) -->
+    <circle cx="220" cy="116" r="28" fill="none" stroke="currentColor" stroke-width="23" />
+    <!-- Vertical Shank -->
+    <line x1="220" y1="146" x2="220" y2="324" stroke="currentColor" stroke-width="24" stroke-linecap="round" />
+    <!-- Rounded Crossbar -->
+    <line x1="170" y1="194" x2="270" y2="194" stroke="currentColor" stroke-width="23" stroke-linecap="round" />
+    <!-- Sweeping Bottom Arc -->
+    <path d="M 118 242 A 104 104 0 0 0 322 242" fill="none" stroke="currentColor" stroke-width="24" stroke-linecap="round" />
+    <!-- Left Pointed Fluke Tip -->
+    <path d="M 115 212 L 142 247 L 95 256 Z" fill="currentColor" stroke="currentColor" stroke-width="7" stroke-linejoin="round" />
+    <!-- Right Pointed Fluke Tip -->
+    <path d="M 325 212 L 298 247 L 345 256 Z" fill="currentColor" stroke="currentColor" stroke-width="7" stroke-linejoin="round" />
+  </g>
+</svg>
