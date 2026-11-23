@@ -32,7 +32,7 @@ brew install --cask yeoleobun/tap/sailor
 - **Native macOS Menu (`NSMenu`):** Pure AppKit `statusItem.menu` with macOS's built-in Liquid Glass translucency, section headers, checkmarks, and submenus—no separate dashboard window needed.
 - **Pendulum Anchor Indicator:** Monochrome template anchor icon in the menu bar that adapts to Light & Dark Mode and swings smoothly from its top ring whenever your Network Location changes (toggleable via **Swing Animation**).
 - **Zero `sudo` Prompts:** Uses macOS's built-in `/usr/sbin/scselect` to switch existing Network Locations instantly without administrator privileges, plus a 1-click **Network Settings…** shortcut to create or edit Locations in System Settings.
-- **Lightweight & Private:** Pure Swift/AppKit, zero external dependencies, stores remembered `SSID → Location` pairs locally in `~/Library/Application Support/Sailor/config.json`.
+- **Lightweight & Private:** Pure Swift/AppKit, zero external dependencies; stores remembered `SSID → Location` rules in `~/Library/Application Support/Sailor/rules.json` and preferences in `UserDefaults`.
 
 ## Permissions
 
