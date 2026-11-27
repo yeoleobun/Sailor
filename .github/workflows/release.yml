@@ -15,13 +15,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Import Code Signing Certificate
         env:
           CODESIGN_P12: ${{ secrets.CODESIGN_P12 }}
           CODESIGN_PASSWORD: ${{ secrets.CODESIGN_PASSWORD }}
         run: |
+          if [ -z "$CODESIGN_P12" ] || [ -z "$CODESIGN_PASSWORD" ]; then
+            echo "Error: CODESIGN_P12 and CODESIGN_PASSWORD secrets must be set." >&2
+            exit 1
+          fi
           KEYCHAIN_PATH="$RUNNER_TEMP/sailor-signing.keychain-db"
           KEYCHAIN_PASS="$(openssl rand -hex 16)"
           P12_PATH="$RUNNER_TEMP/cert.p12"
@@ -45,7 +49,7 @@ jobs:
       - name: Build & Package Release Artifacts
         env:
           SIGN_IDENTITY: yeoleobun
-          APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}', github.ref_name) || 'v0.1.2' }}
+          APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}', github.ref_name) || 'v0.1.4' }}
         run: |
           export APP_VERSION="${APP_VERSION#v}"
           ./scripts/release.sh
@@ -91,10 +95,18 @@ jobs:
           fi
           VERSION="${TAG_NAME#v}"
           ZIP_SHA=$(awk '/Sailor-macos-arm64\.zip/ {print $1}' dist/SHA256SUMS.txt)
-          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/yeoleobun/homebrew-tap.git" /tmp/homebrew-tap
-          cd /tmp/homebrew-tap
+          TAP_DIR="$RUNNER_TEMP/homebrew-tap"
+          rm -rf "$TAP_DIR"
+          git -c credential.helper= clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/yeoleobun/homebrew-tap.git" "$TAP_DIR"
+          cd "$TAP_DIR"
           sed -i '' -e "s/version \".*\"/version \"${VERSION}\"/" -e "s/sha256 \".*\"/sha256 \"${ZIP_SHA}\"/" Casks/sailor.rb
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Casks/sailor.rb
-          git diff --cached --quiet || (git commit -m "Bump sailor cask to ${VERSION}" && git push origin main)
+          if ! git diff --cached --quiet; then
+            git commit -m "Bump sailor cask to ${VERSION}"
+            if ! git -c credential.helper= push origin main; then
+              echo "::error::Failed to push to yeoleobun/homebrew-tap. Ensure HOMEBREW_TAP_TOKEN has write access to yeoleobun/homebrew-tap."
+              exit 1
+            fi
+          fi
